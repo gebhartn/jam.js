@@ -7,19 +7,19 @@ export function makeClient({ prefix, client, queue } = {}) {
   function initialize({ events, actions }) {
     const { listenOn } = events
 
-    listenOn(messageAction({ actions }))
+    listenOn(messageHandler({ actions }))
   }
 
-  async function listen({ events = {}, token } = {}, callback) {
+  function listen({ events = {}, token } = {}, callback) {
     const { listenOnce } = events
 
-    listenOnce(readyAction(await callback({ token })))
-    listenOnce(disconnectAction())
-    listenOnce(reconnectingAction())
+    listenOnce(readyHandler(callback ? callback({ token }) : null))
+    listenOnce(disconnectHandler())
+    listenOnce(reconnectHandler())
     client.login(token)
   }
 
-  function messageAction({ actions }) {
+  function messageHandler({ actions }) {
     async function messageCallback(message) {
       if (message.author.bot) return
       if (!message.content.startsWith(prefix)) return
@@ -27,14 +27,11 @@ export function makeClient({ prefix, client, queue } = {}) {
       const serverQueue = queue.get(message.guild.id)
 
       if (message.content.startsWith(`${prefix}play`)) {
-        actions.execute(message, serverQueue, queue)
-        return
+        return actions.execute(message, serverQueue, queue)
       } else if (message.content.startsWith(`${prefix}skip`)) {
-        actions.skip(message, serverQueue, queue)
-        return
+        return actions.skip(message, serverQueue, queue)
       } else if (message.content.startsWith(`${prefix}stop`)) {
-        actions.stop(message, serverQueue)
-        return
+        return actions.stop(message, serverQueue)
       } else {
         message.channel.send('You need to enter a valid command!')
       }
@@ -47,15 +44,15 @@ export function makeClient({ prefix, client, queue } = {}) {
     })
   }
 
-  function readyAction(callback) {
+  function readyHandler(callback) {
     return Object.freeze({
       client,
       event: 'ready',
-      callback: callback ? callback : () => console.log(),
+      callback: callback ? () => callback : () => console.log('Ready'),
     })
   }
 
-  function disconnectAction() {
+  function disconnectHandler() {
     return Object.freeze({
       client,
       event: 'disconnect',
@@ -63,7 +60,7 @@ export function makeClient({ prefix, client, queue } = {}) {
     })
   }
 
-  function reconnectingAction() {
+  function reconnectHandler() {
     return Object.freeze({
       client,
       event: 'reconnecting',
