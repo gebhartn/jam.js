@@ -1,4 +1,4 @@
-#jam.js
+# jam.js
 
 A minimal music robot
 
