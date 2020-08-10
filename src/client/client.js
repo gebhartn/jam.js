@@ -1,21 +1,25 @@
-export function makeClient({ prefix, client, queue, actions } = {}) {
+export function makeClient({ prefix, client, queue } = {}) {
   return Object.freeze({
     listen,
     initialize,
   })
 
-  function listen({ events }) {
-    events.listenOnce(readyAction())
-    events.listenOnce(disconnectAction())
-    events.listenOnce(reconnectingAction())
-    events.listenOn(messageAction())
+  function initialize({ events, actions }) {
+    const { listenOn } = events
+
+    listenOn(messageAction({ actions }))
   }
 
-  function initialize({ token }) {
+  async function listen({ events = {}, token } = {}, callback) {
+    const { listenOnce } = events
+
+    listenOnce(readyAction(await callback({ token })))
+    listenOnce(disconnectAction())
+    listenOnce(reconnectingAction())
     client.login(token)
   }
 
-  function messageAction() {
+  function messageAction({ actions }) {
     async function messageCallback(message) {
       if (message.author.bot) return
       if (!message.content.startsWith(prefix)) return
@@ -43,11 +47,11 @@ export function makeClient({ prefix, client, queue, actions } = {}) {
     })
   }
 
-  function readyAction() {
+  function readyAction(callback) {
     return Object.freeze({
       client,
       event: 'ready',
-      callback: () => console.log('Ready!'),
+      callback: callback ? callback : () => console.log(),
     })
   }
 

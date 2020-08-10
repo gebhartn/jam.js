@@ -1,3 +1,3 @@
-export { makeClient as NewClient } from './client'
+export { makeClient } from './client'
 
 // TODO: pass in logger, options
