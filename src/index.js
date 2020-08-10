@@ -1,6 +1,6 @@
-import { client } from './client'
-import { events } from './client/events'
+import { bot } from './bot'
+import { events } from './events'
 import { token } from './config'
 
-client.listen({ events })
-client.initialize({ token })
+bot.listen({ events })
+bot.initialize({ token })
