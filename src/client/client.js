@@ -22,19 +22,21 @@ export function makeClient({ prefix, client, queue } = {}) {
   function messageHandler({ actions }) {
     async function messageCallback(message) {
       if (message.author.bot) return
+
       if (!message.content.startsWith(prefix)) return
 
       const serverQueue = queue.get(message.guild.id)
 
-      if (message.content.startsWith(`${prefix}play`)) {
+      if (message.content.startsWith(`${prefix}play`))
         return actions.execute(message, serverQueue, queue)
-      } else if (message.content.startsWith(`${prefix}skip`)) {
+
+      if (message.content.startsWith(`${prefix}skip`))
         return actions.skip(message, serverQueue, queue)
-      } else if (message.content.startsWith(`${prefix}stop`)) {
+
+      if (message.content.startsWith(`${prefix}stop`))
         return actions.stop(message, serverQueue)
-      } else {
-        message.channel.send('You need to enter a valid command!')
-      }
+
+      message.channel.send('You need to enter a valid command!')
     }
 
     return Object.freeze({
@@ -48,7 +50,7 @@ export function makeClient({ prefix, client, queue } = {}) {
     return Object.freeze({
       client,
       event: 'ready',
-      callback: callback ? () => callback : () => console.log('Ready'),
+      callback: callback !== null ? () => callback : () => console.log('Ready'),
     })
   }
 
